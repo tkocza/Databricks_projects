@@ -25,8 +25,15 @@ dev = [
 
 # [project.scripts]
 # main = "db_flights.main:main"
+
 [project.scripts]
-bronze_ingestion = "db_flights.bronze.bronze_kaggle:main"
+# bronze
+bronze_kaggle = "db_flights.bronze.bronze_kaggle:main"
+# silver
+silver_airlines = "db_flights.silver.airlines:main"
+silver_airports = "db_flights.silver.airports:main"
+silver_flights = "db_flights.silver.flights:main"
+
 
 [build-system]
 requires = ["hatchling"]

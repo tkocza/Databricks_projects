@@ -1,6 +1,4 @@
 from pyspark.sql import SparkSession
-import sys
-import os
 
 from db_flights.config.tables.bronze_kaggle_cfg import INGESTION_CONFIG
 from db_flights.shared.metadata import *
@@ -42,4 +40,4 @@ def main():
     
 
 if __name__ == "__main__":
-    run_bronze_ingestion()
+    main()

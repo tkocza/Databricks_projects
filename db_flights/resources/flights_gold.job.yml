@@ -1,0 +1,49 @@
+resources:
+  jobs:
+    flights_gold:
+      name: Flights - Gold
+
+      tasks:
+        - task_key: dim_airlines
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: gold_dim_airlines
+
+          environment_key: default
+
+        - task_key: dim_airports
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: gold_dim_airports
+
+          environment_key: default
+
+        - task_key: dim_time
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: gold_dim_time
+
+          environment_key: default
+
+        - task_key: fact_flights
+
+          depends_on:
+            - task_key: dim_airlines
+            - task_key: dim_airports
+            - task_key: dim_time
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: gold_fact_flights
+
+          environment_key: default
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"
+            dependencies:
+              - ../dist/*.whl

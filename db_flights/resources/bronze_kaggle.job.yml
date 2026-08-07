@@ -1,16 +1,16 @@
 resources:
   jobs:
-    bronze_ingestion:
-      name: bronze_ingestion
+    bronze_kaggle:
+      name: Load Kaggle data
 
       tasks:
-        - task_key: ingest
+        - task_key: kaggle_data
 
           #spark_python_task:
           #  python_file: ../src/bronze/file.py
           python_wheel_task:
             package_name: db_flights
-            entry_point: bronze_ingestion
+            entry_point: bronze_kaggle
 
 
           environment_key: default
