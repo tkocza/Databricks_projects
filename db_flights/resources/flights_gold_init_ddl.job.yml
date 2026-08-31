@@ -1,0 +1,50 @@
+resources:
+  jobs:
+    flights_gold_init:
+      name: Initialize gold tables
+
+      tasks:
+        - task_key: init_dim_time
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: init_dim_time
+
+          environment_key: default
+
+        - task_key: init_dim_airlines
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: init_dim_airlines
+
+          environment_key: default
+
+        - task_key: init_dim_airports
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: init_dim_airports
+
+          environment_key: default
+
+        - task_key: init_fct_flights
+          
+          depends_on:
+            - task_key: init_dim_time
+            - task_key: init_dim_airlines
+            - task_key: init_dim_airports
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: init_fct_flights
+
+          environment_key: default
+
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"
+            dependencies:
+              - ../dist/*.whl

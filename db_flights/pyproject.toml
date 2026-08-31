@@ -27,13 +27,24 @@ dev = [
 # main = "db_flights.main:main"
 
 [project.scripts]
+# entry points
+
 # bronze
 bronze_kaggle = "db_flights.bronze.bronze_kaggle:main"
+
 # silver
 silver_airlines = "db_flights.silver.airlines:main"
 silver_airports = "db_flights.silver.airports:main"
 silver_flights = "db_flights.silver.flights:main"
 
+# gold
+gold_dim_airlines  = "db_flights.gold.dim_airlines:main"
+
+# gold init
+init_dim_time = "db_flights.init_gold.dim_time:main"
+init_dim_airlines = "db_flights.init_gold.dim_airlines:main"
+init_dim_airports = "db_flights.init_gold.dim_airports:main"
+init_fct_flights = "db_flights.init_gold.fct_flights:main"
 
 [build-system]
 requires = ["hatchling"]

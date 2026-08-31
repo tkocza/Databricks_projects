@@ -17,10 +17,18 @@ resources:
           run_job_task:
             job_id: ${resources.jobs.flights_silver.id}
 
-        # - task_key: gold
-		# 
-        #   depends_on:
-        #     - task_key: silver
-		# 
-        #   run_job_task:
-        #     job_id: ${resources.jobs.flights_gold.id}
+        - task_key: gold_init
+
+          depends_on:
+            - task_key: silver
+
+          run_job_task:
+            job_id: ${resources.jobs.flights_gold_init.id}
+
+        - task_key: gold
+
+          depends_on:
+            - task_key: gold_init
+
+          run_job_task:
+            job_id: ${resources.jobs.flights_gold.id}
