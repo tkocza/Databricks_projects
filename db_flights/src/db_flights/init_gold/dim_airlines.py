@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-
+from db_flights.shared.metadata import SCD_VALID_FROM, SCD_VALID_TO
 '''
 DDL is executed via spark.sql() to keep the public portfolio environment-independent
 and avoid hardcoding a workspace-specific warehouse ID.
@@ -37,50 +37,44 @@ def create_table_gold_dim_airlines():
     """)
 
 def insert_special_records():
-    spark.sql("""
-            INSERT INTO db_flights.gold.dim_airlines (
-                airline_id,
-                airline_code,
-                airline,
-                row_hash,
-                valid_from,
-                valid_to,
-                is_current
-            )
-            SELECT *
-            FROM VALUES
-                (
-                    -1,
-                    'UNKNOWN',
-                    'Unknown Airline',
-                    'NA',
-                    NULL,
-                    NULL,
-                    TRUE
-                ),
-                (
-                    -999,
-                    'QUARANTINED',
-                    'Missing Airline',
-                    'NA',
-                    NULL,
-                    NULL,
-                    TRUE
-                )
-            AS source(
-                airline_id,
-                airline_code,
-                airline,
-                row_hash,
-                valid_from,
-                valid_to,
-                is_current
-            )
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM db_flights.gold.dim_airlines AS target
-                WHERE target.airline_id = source.airline_id
-            );
+
+    spark.sql(f"""
+        INSERT INTO db_flights.gold.dim_airlines (
+            airline_id,
+            airline_code,
+            airline,
+            row_hash,
+            valid_from,
+            valid_to,
+            is_current
+        )
+        SELECT *
+        FROM (
+            SELECT
+                -1 AS airline_id,
+                'UNKNOWN' AS airline_code,
+                'Unknown Airline' AS airline,
+                'NA' AS row_hash,
+                to_timestamp('{SCD_VALID_FROM}') AS valid_from,
+                to_timestamp('{SCD_VALID_TO}') AS valid_to,
+                TRUE AS is_current
+
+            UNION ALL
+
+            SELECT
+                -999 AS airline_id,
+                'QUARANTINED' AS airline_code,
+                'Missing Airline' AS airline,
+                'NA' AS row_hash,
+                to_timestamp('{SCD_VALID_FROM}') AS valid_from,
+                to_timestamp('{SCD_VALID_TO}') AS valid_to,
+                TRUE AS is_current
+        ) AS source
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM db_flights.gold.dim_airlines AS target
+            WHERE target.airline_id = source.airline_id
+        )
     """)
 
 def main():

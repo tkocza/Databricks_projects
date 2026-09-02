@@ -1,4 +1,5 @@
 from pyspark.sql import SparkSession
+from db_flights.shared.metadata import SCD_VALID_FROM, SCD_VALID_TO
 
 '''
 DDL is executed via spark.sql() to keep the public portfolio environment-independent
@@ -50,9 +51,9 @@ def create_table_gold_dim_airports():
     )
     USING DELTA;
     """)
-
 def insert_special_records():
-    spark.sql("""
+
+    spark.sql(f"""
         INSERT INTO db_flights.gold.dim_airports (
             airport_id,
             airport_code,
@@ -79,31 +80,31 @@ def insert_special_records():
                 NULL AS latitude,
                 NULL AS longitude,
                 'NA' AS row_hash,
-                NULL AS valid_from,
-                NULL AS valid_to,
+                to_timestamp('{SCD_VALID_FROM}') AS valid_from,
+                to_timestamp('{SCD_VALID_TO}') AS valid_to,
                 TRUE AS is_current
 
             UNION ALL
 
             SELECT
-                -999,
-                'QUARANTINED',
-                'Missing Airport',
-                'Unknown',
-                'Unknown',
-                'Unknown',
-                NULL,
-                NULL,
-                'NA',
-                NULL,
-                NULL,
-                TRUE
+                -999 AS airport_id,
+                'QUARANTINED' AS airport_code,
+                'Missing Airport' AS airport,
+                'Unknown' AS city,
+                'Unknown' AS state,
+                'Unknown' AS country,
+                NULL AS latitude,
+                NULL AS longitude,
+                'NA' AS row_hash,
+                to_timestamp('{SCD_VALID_FROM}') AS valid_from,
+                to_timestamp('{SCD_VALID_TO}') AS valid_to,
+                TRUE AS is_current
         ) AS source
         WHERE NOT EXISTS (
             SELECT 1
             FROM db_flights.gold.dim_airports AS target
             WHERE target.airport_id = source.airport_id
-        );
+        )
     """)
 
 

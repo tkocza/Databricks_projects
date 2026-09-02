@@ -9,7 +9,7 @@ spark = SparkSession.builder.getOrCreate()
 
 def create_table_gold_fct_flights():
     spark.sql("""
-    CREATE TABLE IF NOT EXISTS db_flights.gold.fact_flights (
+    CREATE TABLE IF NOT EXISTS db_flights.gold.fct_flights (
         run_id STRING NOT NULL
             COMMENT 'Identifier of the pipeline run that loaded the record',
 
@@ -116,7 +116,8 @@ def create_table_gold_fct_flights():
             COMMENT 'Departure delay category',
 
         arrival_delay_category STRING
-            COMMENT 'Arrival delay category',\
+            COMMENT 'Arrival delay category',
+            
         CONSTRAINT fk_fact_flights_date
             FOREIGN KEY (date_id)
             REFERENCES db_flights.gold.dim_time (date_id),

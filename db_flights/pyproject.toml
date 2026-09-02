@@ -38,7 +38,9 @@ silver_airports = "db_flights.silver.airports:main"
 silver_flights = "db_flights.silver.flights:main"
 
 # gold
-gold_dim_airlines  = "db_flights.gold.dim_airlines:main"
+gold_dim_airlines = "db_flights.gold.dim_airlines:main"
+gold_dim_airports = "db_flights.gold.dim_airports:main"
+gold_fct_flights = "db_flights.gold.fct_flights:main"
 
 # gold init
 init_dim_time = "db_flights.init_gold.dim_time:main"

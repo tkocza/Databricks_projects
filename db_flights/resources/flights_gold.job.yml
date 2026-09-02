@@ -12,6 +12,27 @@ resources:
 
           environment_key: default
 
+        - task_key: dim_airports
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: gold_dim_airports
+
+          environment_key: default
+
+        - task_key: fct_flights
+
+          depends_on:
+          - task_key: dim_airlines
+          - task_key: dim_airports
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: gold_fct_flights
+
+          environment_key: default
+
+
       environments:
         - environment_key: default
           spec:

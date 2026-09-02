@@ -2,6 +2,9 @@ from delta.tables import DeltaTable
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
+from db_flights.shared.metadata import TECHNICAL_COLUMNS
+from db_flights.shared.metadata import SCD_VALID_FROM, SCD_VALID_TO
+
 from db_flights.shared.reader import read_table
 
 
@@ -11,25 +14,32 @@ SOURCE_TABLE = "db_flights.silver.airlines"
 TARGET_TABLE = "db_flights.gold.dim_airlines"
 
 
-def create_initial_dimension(source):
+def load_dimension():
 
-    df = (
-        source
-        .withColumn("valid_from", F.to_timestamp(F.lit("1900-01-01")))
-        .withColumn("valid_to", F.to_timestamp(F.lit("3000-12-31")))
-        .withColumn("is_current", F.lit(True))
-    )
-
-    df.write.format("delta").mode("overwrite").saveAsTable(TARGET_TABLE)
-
-
-def update_dimension(source):
-
+    source = read_table(SOURCE_TABLE).drop(*TECHNICAL_COLUMNS)
     target = DeltaTable.forName(spark, TARGET_TABLE)
 
-    current_dim = read_table(TARGET_TABLE).filter(F.col("is_current"))
+    current_dim = (
+        read_table(TARGET_TABLE)
+        .filter(
+            F.col("is_current") & (~F.col("airline_id").isin(-1, -999))
+        )
+    )
 
-    # full join is necessary to detect 3 cases: new, changed, deleted
+    # Initial load
+    if current_dim.isEmpty():
+
+        records_to_insert = (
+            source
+            .withColumn("valid_from", F.to_timestamp(F.lit(SCD_VALID_FROM)))
+            .withColumn("valid_to", F.to_timestamp(F.lit(SCD_VALID_TO)))
+            .withColumn("is_current", F.lit(True))
+        )
+
+        records_to_insert.write.format("delta").mode("append").saveAsTable(TARGET_TABLE)
+        return
+
+    # Detect new, changed and deleted records
     changes = (
         source.alias("new")
         .join(current_dim.alias("old"), "airline_code", "full")
@@ -56,9 +66,10 @@ def update_dimension(source):
             records_to_expire.alias("source"),
             "target.airline_code = source.airline_code AND target.is_current = true"
         )
+        # "- INTERVAL 1 SECOND" to get 23:59:59 day before
         .whenMatchedUpdate(
             set={
-                "valid_to": "current_timestamp()",
+                "valid_to": "CAST(current_date() AS TIMESTAMP) - INTERVAL 1 SECOND",
                 "is_current": "false"
             }
         )
@@ -70,26 +81,15 @@ def update_dimension(source):
         changes
         .filter(F.col("record_status").isin("NEW", "CHANGED"))
         .select("new.*")
-        .withColumn("valid_from", F.current_timestamp())
-        .withColumn("valid_to", F.to_timestamp(F.lit("3000-12-31")))
+        .withColumn("valid_from", F.current_date().cast("timestamp"))
+        .withColumn("valid_to", F.to_timestamp(F.lit(SCD_VALID_TO)))
         .withColumn("is_current", F.lit(True))
     )
 
     records_to_insert.write.format("delta").mode("append").saveAsTable(TARGET_TABLE)
 
-
-def update_dim_airlines():
-
-    source = read_table(SOURCE_TABLE)
-
-    if not spark.catalog.tableExists(TARGET_TABLE):
-        create_initial_dimension(source)
-    else:
-        update_dimension(source)
-
-
 def main():
-    update_dim_airlines()
+    load_dimension()
 
 
 if __name__ == "__main__":
