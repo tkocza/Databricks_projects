@@ -1,6 +1,6 @@
 # Databricks Flight Data Pipeline
 
-A production-style data pipeline built with **PySpark, Delta Lake and Databricks** using the **US DOT Flight Delays** dataset. The dataset contains flight, airline, airport, delay, cancellation and diversion information. The pipeline transforms raw flight data into a **Medallion Architecture**: Bronze → Silver → Gold. The Gold layer contains SCD2 dimensions and a business-ready flight fact table.
+A production-style data pipeline built with **PySpark, Delta Lake and Databricks** using the **US DOT Flight Delays** dataset. The dataset contains flight, airline, airport, delay, cancellation and diversion information. The pipeline transforms raw flight data into a **Medallion Architecture**: Bronze ->  Silver -> Gold. The Gold layer contains SCD2 dimensions and a business-ready flight fact table.
 
 ## Architecture
 
