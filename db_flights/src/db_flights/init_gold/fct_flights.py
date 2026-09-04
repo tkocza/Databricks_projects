@@ -134,7 +134,8 @@ def create_table_gold_fct_flights():
             FOREIGN KEY (airline_id)
             REFERENCES db_flights.gold.dim_airlines (airline_id)            
     )
-    USING DELTA;
+    USING DELTA
+    PARTITIONED BY (flight_date)
     """)
 
 
