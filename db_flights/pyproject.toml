@@ -48,6 +48,9 @@ init_dim_airlines = "db_flights.init_gold.dim_airlines:main"
 init_dim_airports = "db_flights.init_gold.dim_airports:main"
 init_fct_flights = "db_flights.init_gold.fct_flights:main"
 
+# optimization
+optimize_facts = = "db_flights.optimization.optimize_facts:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

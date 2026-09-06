@@ -32,3 +32,14 @@ resources:
 
           run_job_task:
             job_id: ${resources.jobs.flights_gold.id}
+
+        - task_key: optimize_facts
+
+          depends_on:
+            - task_key: gold
+
+          python_wheel_task:
+            package_name: db_flights
+            entry_point: optimize_facts
+            
+          environment_key: default
