@@ -1,0 +1,21 @@
+resources:
+  pipelines:
+    flights_pipeline:
+      name: ${bundle.target}-flights-lakeflow
+      catalog: ${var.catalog}
+      schema: bronze
+      serverless: true
+
+      libraries:
+        - file:
+            path: ../src/db_flights_lakeflow/bronze/bronze.py
+        - file:
+            path: ../src/db_flights_lakeflow/silver/airports.py
+        - file:
+            path: ../src/db_flights_lakeflow/silver/airlines.py
+        - file:
+            path: ../src/db_flights_lakeflow/silver/flights.py
+
+      environment:
+        dependencies:
+          - ../dist/*.whl
