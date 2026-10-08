@@ -15,6 +15,8 @@ resources:
             path: ../src/db_flights_lakeflow/silver/airlines.py
         - file:
             path: ../src/db_flights_lakeflow/silver/flights.py
+        - file:
+            path: ../src/db_flights_lakeflow/gold/dim_airlines.py
 
       environment:
         dependencies:

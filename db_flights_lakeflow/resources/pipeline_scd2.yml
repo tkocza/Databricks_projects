@@ -1,0 +1,21 @@
+resources:
+  jobs:
+    flights_scd2_job:
+      name: ${bundle.target}-flights-scd2
+
+      tasks:
+        - task_key: generate_airlines_snapshot
+          spark_python_task:
+            python_file: ../src/db_flights_lakeflow/scd2_data_generator/airlines_new_batch.py
+          environment_key: default
+
+        - task_key: run_scd2_pipeline
+          depends_on:
+            - task_key: generate_airlines_snapshot
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.flights_pipeline.id}
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"
