@@ -1,0 +1,22 @@
+resources:
+  jobs:
+    flights_daily_job:
+      name: ${bundle.target}-flights-daily
+      max_concurrent_runs: 1
+ 
+      # Daily load: enable ONE of the options below (schedule or trigger).
+      # schedule:
+      #   quartz_cron_expression: "0 0 6 * * ?"
+      #   timezone_id: Europe/Warsaw
+      #   pause_status: UNPAUSED
+      #
+      # trigger:
+      #   pause_status: UNPAUSED
+      #   file_arrival:
+      #     url: /Volumes/db_flights/raw_data/kaggle_datasets/
+ 
+      tasks:
+        - task_key: run_flights_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.flights_pipeline.id}
+            full_refresh: false

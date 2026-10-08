@@ -1,6 +1,7 @@
 from pyspark import pipelines as dp
 from pyspark.sql import functions as F, Window
 
+from db_flights_lakeflow.shared.metadata import SCD_VALID_FROM, SCD_VALID_TO
 
 SILVER = "db_flights_lakeflow.silver.airlines"
 GOLD = "db_flights_lakeflow.gold.dim_airlines"
@@ -29,20 +30,19 @@ def dim_airlines():
             "airline",
             F.when(
                 F.col("__START_AT") == F.col("initial_start"),
-                F.lit("1900-01-01").cast("timestamp"),
+                F.lit(SCD_VALID_FROM).cast("timestamp"),
             ).otherwise(F.col("__START_AT")).alias("valid_from"),
             F.coalesce(
                 F.col("__END_AT") - F.expr("INTERVAL 1 SECOND"),
-                F.lit("3000-12-31 23:59:59").cast("timestamp"),
+                F.lit(SCD_VALID_TO).cast("timestamp"),
             ).alias("valid_to"),
             F.col("__END_AT").isNull().alias("is_current"),
         )
         # if you allow negative hash
         # .withColumn("airline_id", F.xxhash64("airline_code", "valid_from"))
         # if you prefer only positive numbers in hash
-        .withColumn("airline_id", F.xxhash64("airline_code", "valid_from").bitwiseAND(F.lit(9223372036854775807)),
-)
-    )
+        .withColumn("airline_id", F.xxhash64("airline_code", "valid_from").bitwiseAND(F.lit(9223372036854775807)),)
+        )
 
     special_records = (
         spark.createDataFrame(
@@ -52,11 +52,11 @@ def dim_airlines():
             ],
             "airline_id long, airline_code string, airline string",
         )
-        .withColumn("valid_from", F.lit("1900-01-01").cast("timestamp"))
-        .withColumn("valid_to", F.lit("3000-12-31 23:59:59").cast("timestamp"))
+        .withColumn("valid_from", F.lit(SCD_VALID_FROM).cast("timestamp"))
+        .withColumn("valid_to", F.lit(SCD_VALID_TO).cast("timestamp"))
         .withColumn("is_current", F.lit(True))
     )
 
-    return dim.unionByName(special_records).select(
-        "airline_id", "airline_code", "airline", "valid_from", "valid_to", "is_current"
-    )
+    df = dim.unionByName(special_records).select("airline_id", "airline_code", "airline", "valid_from", "valid_to", "is_current")
+
+    return df

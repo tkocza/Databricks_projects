@@ -7,22 +7,22 @@ from db_flights_lakeflow.shared.metadata import TECHNICAL_COLUMNS, SCD_VALID_FRO
 
 BRONZE = "db_flights_lakeflow.bronze.airlines"
 SILVER = "db_flights_lakeflow.silver.airlines"
-GOLD = "db_flights_lakeflow.gold.dim_airlines"
-
 
 
 @dp.view(name="airlines_latest")
 @dp.expect_or_fail("airline_code_not_null", "airline_code IS NOT NULL")
 @dp.expect("airline_code_valid_length", "length(airline_code) = 2")
 def airlines_latest():
+
     bronze = spark.read.table(BRONZE)
+    
     # find the new batch of records
     latest_load = bronze.agg(F.max("load_date").alias("load_date"))
-    return (
-        bronze.join(latest_load, "load_date", "left_semi")
-        .withColumnsRenamed({"iata_code": "airline_code"})
-        .drop(*TECHNICAL_COLUMNS)
-    )
+
+    df = bronze.join(latest_load, "load_date", "left_semi") \
+                .withColumnsRenamed({"iata_code": "airline_code"}) \
+                .drop(*TECHNICAL_COLUMNS)
+    return df
 
 
 dp.create_streaming_table(SILVER)

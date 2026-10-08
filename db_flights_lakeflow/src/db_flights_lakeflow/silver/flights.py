@@ -3,7 +3,11 @@ from pyspark import pipelines as dp
 from db_flights_lakeflow.shared.metadata import TECHNICAL_COLUMNS
 from db_flights_lakeflow.shared.dates_transformations import create_date_column, create_timestamp_column
 
-@dp.table(name="db_flights_lakeflow.silver.flights")
+SOURCE = "db_flights_lakeflow.bronze.flights"
+TARGET = "db_flights_lakeflow.silver.flights"
+
+
+@dp.table(name=TARGET)
 # errors and termination
 @dp.expect_or_fail("flight_date_not_null", "flight_date IS NOT NULL")
 @dp.expect_or_fail("flight_number_not_null", "flight_number IS NOT NULL")
@@ -13,11 +17,11 @@ from db_flights_lakeflow.shared.dates_transformations import create_date_column,
 
 def transform_flights():
 
-    df = spark.read.table("db_flights_lakeflow.bronze.flights")
+    # Incremental read: only new bronze rows are processed on each run
+    df = spark.readStream.table(SOURCE)
 
-    rename_cols_map_flights = {
-    'airline': 'airline_code'
-    }
+    rename_cols_map_flights = {'airline': 'airline_code'}
+
     df = df.withColumnsRenamed(rename_cols_map_flights)
 
     df = (
