@@ -1,7 +1,22 @@
 resources:
   jobs:
-    master_pipeline:
+    flights_master:
       name: Master - Flights Pipeline
+
+      max_concurrent_runs: 1
+
+      # Daily load: enable the schedule below.
+      # schedule:
+      #   quartz_cron_expression: "0 0 6 * * ?"
+      #   timezone_id: Europe/Warsaw
+      #   pause_status: UNPAUSED
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"
+            dependencies:
+              - ../dist/*.whl
 
       tasks:
         - task_key: bronze

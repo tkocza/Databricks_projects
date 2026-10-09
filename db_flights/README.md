@@ -66,7 +66,7 @@ permissions:
 | `flights_silver` | Silver transformations |
 | `flights_gold_init` | Gold data structures |
 | `flights_gold` | Gold data modelling |
-| `master` | End-to-end orchestration |
+| `flights_master` | End-to-end orchestration |
 
 ## Primary & Foreign Keys
 

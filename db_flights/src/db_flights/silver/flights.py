@@ -8,10 +8,10 @@ def transform_flights():
 
     df = read_table("db_flights.bronze.flights")
 
-    rename_cols_map_airports = {
+    rename_cols_map_flights = {
     'airline': 'airline_code'
     }
-    df = df.withColumnsRenamed(rename_cols_map_airports)
+    df = df.withColumnsRenamed(rename_cols_map_flights)
 
     df = (
         df

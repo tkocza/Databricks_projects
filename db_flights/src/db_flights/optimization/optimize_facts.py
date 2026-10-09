@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 
 spark = SparkSession.builder.getOrCreate()
 
-TABLE = "db_flights.gold.fact_flights"
+TABLE = "db_flights.gold.fct_flights"
 
 # Z-ORDER on frequently filtered/joined columns and flight_date is already used for partitioning, so it is excluded from Z-ORDER
 ZORDER_COLUMNS = ["airline_id", "origin_airport_id", "destination_airport_id"]
